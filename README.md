@@ -1,3 +1,12 @@
+> **Assignment 2.2 — in progress.** The original `numcompute` package below
+> is preserved. A separate `numcompute_stream` package adds buffered decision
+> tree training, incremental preprocessing/statistics and CSV streaming.
+> See [CLASSIFICATION_TREE_ALIGNMENT.md](CLASSIFICATION_TREE_ALIGNMENT.md)
+
+> To verify current work from the project root:
+> `python -m pytest -q`, then
+> `python demo/lecturer_classification_tree_demo.py`.
+
 # NumCompute
 
 NumCompute is a numerical computing toolkit implemented using **plain Python and NumPy**.
@@ -42,7 +51,7 @@ The tree below shows the project layout and modules.
 │       └── benchmarking.py
 ├── tests/
 │   ├── test_io.py
-│   ├── test_preprocessing.py 
+│   ├── test_preprocessing.py
 │   ├── test_sort_search.py
 │   ├── test_rank_stats.py
 │   ├── test_metrics.py
@@ -65,14 +74,15 @@ The tree below shows the project layout and modules.
 
 ## Requirements
 
-* Python 3.10 or newer
-* NumPy (installed from `requirements.txt`)
-* Plain Python standard library where required
+- Python 3.10 or newer
+- NumPy (installed from `requirements.txt`)
+- Plain Python standard library where required
 
 The project does not uses any external ML/DL libraries such as:
-* scikit-learn
-* pandas
-* PyTorch
+
+- scikit-learn
+- pandas
+- PyTorch
 
 ---
 
@@ -119,23 +129,24 @@ The installed package is named `numcompute` and can be imported from Python scri
 
 Supports:
 
-* `load_csv(path, ...) -> (header, data)` for complete-table loading
-* `iter_csv(path, chunksize=1000, ...)` for bounded-memory iteration
-* Custom delimiters, requested or inferred dtypes, and fill/drop missing modes
-* Numeric arrays for numeric tables and object arrays for mixed columns
+- `load_csv(path, ...) -> (header, data)` for complete-table loading
+- `iter_csv(path, chunksize=1000, ...)` for bounded-memory iteration
+- Custom delimiters, requested or inferred dtypes, and fill/drop missing modes
+- Numeric arrays for numeric tables and object arrays for mixed columns
 
 `load_csv` returns the column names and a 2D NumPy array using
 `numpy.loadtxt`. Use `iter_csv` to process data in bounded-memory chunks.
 
 ---
+
 ### `preprocessing.py` — Data preprocessing
 
 Preprocessing components:
 
-* `StandardScaler`
-* `MinMaxScaler`
-* `OneHotEncoder`
-* `Imputer` for replacing NaN or configured missing-value markers
+- `StandardScaler`
+- `MinMaxScaler`
+- `OneHotEncoder`
+- `Imputer` for replacing NaN or configured missing-value markers
 
 Preprocessors provide `fit(X)`, `transform(X)`, and `fit_transform(X)` methods.
 
@@ -151,12 +162,12 @@ fit_transform(X) -> X_out
 
 Includes:
 
-* Stable sorting
-* Multi-key sorting
-* `topk(values, k, largest=True, return_indices=True)`
-* Top-k selection using `np.argpartition`
-* Quickselect
-* Binary search
+- Stable sorting
+- Multi-key sorting
+- `topk(values, k, largest=True, return_indices=True)`
+- Top-k selection using `np.argpartition`
+- Quickselect
+- Binary search
 
 Binary search returns the insertion index and whether the value exists.
 
@@ -182,14 +193,14 @@ percentile(data, q, interpolation="linear")
 
 Basic statistical functions:
 
-* Mean
-* Median
-* Standard deviation
-* Minimum
-* Maximum
-* Histogram
-* Quantiles
-* NaN-aware batch statistics and exact quantiles
+- Mean
+- Median
+- Standard deviation
+- Minimum
+- Maximum
+- Histogram
+- Quantiles
+- NaN-aware batch statistics and exact quantiles
 
 ---
 
@@ -230,7 +241,7 @@ The `grad` function estimates gradients using finite differences:
 grad(f, x, h=1e-5, method="central")
 ```
 
-Supported methods are `central` and  `forward`. Jacobian estimation is provided through:
+Supported methods are `central` and `forward`. Jacobian estimation is provided through:
 
 ```python
 jacobian(F, x, ...)
@@ -347,18 +358,18 @@ Example local measurement (Python 3.13.7, NumPy 2.5.4, macOS 27.0.1,
 arm64, 10 reported CPUs; seeded 200,000-element input, one warm-up and five
 timed repeats):
 
-| Implementation | Median (s) | Minimum (s) |
-|---|---:|---:|
-| Python loop | 0.00737 | 0.00692 |
-| NumPy vectorised | 0.0000735 | 0.0000306 |
+| Implementation   | Median (s) | Minimum (s) |
+| ---------------- | ---------: | ----------: |
+| Python loop      |    0.00737 |     0.00692 |
+| NumPy vectorised |  0.0000735 |   0.0000306 |
 
 ---
 
 # Project Team
 
-| Team Member   | Main Contribution |
-| -------- | ----------------- |
+| Team Member    | Main Contribution                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------ |
 | Prajal Patidar | io.py (shared contribution), optim.py, benchmarking.py, utils.py, pipeline.py, and project integration |
-| Manthan Lad | stats.py, metrics.py, display_histogram.py, and technical report |
-| Mansi Khare | io.py (shared contribution), rank.py, and presentation |
-| Sarthak Sharma | preprocessing.py, sort_search.py, and technical report |
+| Manthan Lad    | stats.py, metrics.py, display_histogram.py, and technical report                                       |
+| Mansi Khare    | io.py (shared contribution), rank.py, and presentation                                                 |
+| Sarthak Sharma | preprocessing.py, sort_search.py, and technical report                                                 |
