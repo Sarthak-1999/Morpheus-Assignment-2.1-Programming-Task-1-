@@ -1,12 +1,3 @@
-> **Assignment 2.2 — in progress.** The original `numcompute` package below
-> is preserved. A separate `numcompute_stream` package adds buffered decision
-> tree training, incremental preprocessing/statistics and CSV streaming.
-> See [CLASSIFICATION_TREE_ALIGNMENT.md](CLASSIFICATION_TREE_ALIGNMENT.md)
-
-> To verify current work from the project root:
-> `python -m pytest -q`, then
-> `python demo/lecturer_classification_tree_demo.py`.
-
 # NumCompute
 
 NumCompute is a numerical computing toolkit implemented using **plain Python and NumPy**.
@@ -36,38 +27,29 @@ The tree below shows the project layout and modules.
 
 ```text
 .
-├── NumCompute/
-│   └── numcompute/
-│       ├── __init__.py
-│       ├── io.py
-│       ├── preprocessing.py
-│       ├── sort_search.py
-│       ├── rank.py
-│       ├── stats.py
-│       ├── metrics.py
-│       ├── optim.py
-│       ├── pipeline.py
-│       ├── utils.py
-│       └── benchmarking.py
-├── tests/
-│   ├── test_io.py
-│   ├── test_preprocessing.py
-│   ├── test_sort_search.py
-│   ├── test_rank_stats.py
-│   ├── test_metrics.py
-│   ├── test_optim.py
-│   ├── test_pipeline.py
-│   ├── test_utils.py
-│   ├── test_benchmarking.py
-│   └── test_streaming_and_package.py
+├── NumCompute/numcompute/       # Original Assignment 2.1 library (unchanged)
+├── numcompute_stream/          # Streaming classification framework
+│   ├── __init__.py
+│   ├── tree.py
+│   ├── io.py
+│   ├── preprocessing.py
+│   ├── stats.py
+│   ├── metrics.py
+│   ├── pipeline.py
+│   └── stream.py
+├── tests/                      # Original + new streaming tests
+│   ├── test_stream_tree.py
+│   ├── test_lecturer_classification_tree.py
+│   ├── test_stream_preprocessing_stats_io.py
+│   └── test_stream_pipeline_metrics.py
 ├── demo/
-│   └── quickstart.ipynb
-├── requirements.txt
-├── requirements-dev.txt
-├── .gitignore
+│   ├── data/titanic.csv
+│   ├── lecturer_classification_tree_demo.py
+│   └── step4_stream_trainer_demo.py
 ├── README.md
 ├── pyproject.toml
-└── CODING_STYLE.md
+├── requirements.txt
+└── requirements-dev.txt
 ```
 
 ---

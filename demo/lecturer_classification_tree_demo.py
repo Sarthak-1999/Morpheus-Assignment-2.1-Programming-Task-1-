@@ -1,10 +1,7 @@
-"""Reproduce the Week 10 Classification Trees teaching example with NumCompute.
-
+"""
 Run: python demo/lecturer_classification_tree_demo.py
 
-The 12-student example is from the supplied classification-tree.html lesson.
-This code implements and explains the learning rules but does not copy the
-lesson's reference implementation.
+This code implements and explains the learning rules
 """
 
 import numpy as np
