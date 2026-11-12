@@ -23,3 +23,6 @@ dist/
 # Editor and operating-system files
 .vscode/
 .DS_Store
+
+# Generated notebook figures (rerunnable from demo/stream_demo.ipynb)
+demo/outputs/
