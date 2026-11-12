@@ -149,7 +149,20 @@ class StreamingClassificationMetrics:
         return self
 
     def update(self, y_true_chunk, y_pred_chunk, y_score_chunk=None):
+        """Accumulate one evaluated chunk, validating all inputs first.
+
+        Invalid confidence scores or labels must not alter the existing
+        label vocabulary, confusion matrix, or score history.
+        """
         truth, predictions = _pair(y_true_chunk, y_pred_chunk)
+        scores = None
+        if y_score_chunk is not None:
+            try:
+                scores = np.asarray(y_score_chunk, dtype=float)
+            except (TypeError, ValueError) as exc:
+                raise ValueError('y_score_chunk must contain numeric confidence scores.') from exc
+            if scores.ndim != 1 or len(scores) != len(truth) or not np.isfinite(scores).all():
+                raise ValueError('y_score_chunk must be finite 1D scores matching y_true_chunk.')
         if self._fixed_labels is None:
             new_labels = np.unique(np.concatenate((truth, predictions, self.labels_)))
             if len(new_labels) != len(self.labels_) or not np.array_equal(new_labels, self.labels_):
@@ -160,11 +173,6 @@ class StreamingClassificationMetrics:
                 self.matrix_, self.labels_ = updated, new_labels
         elif not (np.isin(truth, self.labels_).all() and np.isin(predictions, self.labels_).all()):
             raise ValueError('Unknown classification label; not in fixed labels.')
-        scores = None
-        if y_score_chunk is not None:
-            scores = np.asarray(y_score_chunk, dtype=float)
-            if scores.ndim != 1 or len(scores) != len(truth) or not np.isfinite(scores).all():
-                raise ValueError('y_score_chunk must be finite 1D scores matching y_true_chunk.')
         self.matrix_ += _counts(truth, predictions, self.labels_)
         self.n_samples_seen_ += len(truth)
         if scores is not None:
