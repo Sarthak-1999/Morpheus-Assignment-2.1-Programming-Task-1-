@@ -1,357 +1,187 @@
-# NumCompute
+# NumCompute — Streaming Decision Tree Framework
 
-NumCompute is a numerical computing toolkit implemented using **plain Python and NumPy**.
+A streaming classification framework built from scratch with **Python, NumPy, and Matplotlib**. This project extends the original NumCompute numerical-computing package with incremental preprocessing, a buffered decision tree classifier, streaming evaluation, visualisation, and reproducible performance benchmarks.
 
-The project implements numerical data loading, preprocessing, sorting and searching, ranking, statistics, evaluation metrics, finite-difference differentiation, and pipeline functionality.
-
-External machine learning/deep learning libraries such as **scikit-learn, Pandas and PyTorch are not used**.
-
----
+The original group package remains in `NumCompute/numcompute/`; the streaming extension is implemented separately in `numcompute_stream/`.
 
 ## Features
 
-- Load CSV files and process large files in chunks.
-- Impute missing values, scale numerical features, and encode categorical values.
-- Sort, search, rank, and select values.
-- Calculate descriptive statistics, quantiles, percentiles, and histograms.
-- Evaluate classification and regression predictions.
-- Estimate gradients and Jacobians using finite differences.
-- Compose preprocessing steps into reusable pipelines.
-- Benchmark Python and NumPy implementations.
+- **Decision tree classifier:** Gini or entropy-based splitting, configurable maximum depth, minimum split size, feature selection, and class probabilities.
+- **Buffered retraining:** `partial_fit(X_chunk, y_chunk)` collects incoming samples and replaces the trained tree whenever the buffer reaches `buffer_size`.
+- **Incremental preprocessing:** Running statistics, scaling, missing-value imputation, and categorical one-hot encoding.
+- **Streaming pipeline:** Chained preprocessing and model training with a consistent feature representation between retraining events.
+- **Evaluation:** Per-chunk and cumulative accuracy, error, precision, recall, F1-score, confusion matrix, ROC AUC, and rolling-window metrics.
+- **Visualisation:** Reusable Matplotlib plots for metrics over time, model comparisons, and predicted versus actual labels.
+- **Testing and benchmarking:** Automated unit/integration tests and controlled performance experiments.
 
----
-
-## Project Structure
-
-The tree below shows the project layout and modules.
+## Project structure
 
 ```text
-.
-├── NumCompute/numcompute/       # Original Assignment 2.1 library (unchanged)
-├── numcompute_stream/          # Streaming classification framework
-│   ├── __init__.py
-│   ├── tree.py
-│   ├── io.py
-│   ├── preprocessing.py
-│   ├── stats.py
-│   ├── metrics.py
-│   ├── pipeline.py
-│   └── stream.py
-├── tests/                      # Original + new streaming tests
-│   ├── test_stream_tree.py
-│   ├── test_lecturer_classification_tree.py
-│   ├── test_stream_preprocessing_stats_io.py
-│   └── test_stream_pipeline_metrics.py
-├── demo/
-│   ├── data/titanic.csv
-│   ├── lecturer_classification_tree_demo.py
-│   └── step4_stream_trainer_demo.py
-├── README.md
-├── pyproject.toml
-├── requirements.txt
-└── requirements-dev.txt
+NumCompute/numcompute/       Original group package
+numcompute_stream/
+    tree.py                 DecisionTreeClassifier
+    preprocessing.py        Incremental transformers
+    stats.py                Streaming statistics
+    io.py                   CSV input and chunk iteration
+    metrics.py              Classification metrics
+    pipeline.py             Incremental model pipeline
+    stream.py               StreamTrainer and logging
+    visualise.py            Plotting utilities
+tests/                      Unit and integration tests
+demo/
+    data/titanic.csv        Example classification dataset
+    stream_demo.ipynb       Main streaming demonstration
+    stream_trainer_demo.py    CSV streaming and metric logging
+    classification_tree_demo.py  Binary-feature tree example
+    streaming_data_demo.py   Incremental preprocessing example
+    tree_demo.py             Buffered tree training example
+benchmark/
+    benchmark_vectorization.py
+    benchmark_buffer_size.py
+    run_benchmarks.py
+    results/                 Benchmark CSV files and figures
+pyproject.toml
+requirements.txt
+requirements-dev.txt
+README.md
 ```
-
----
-
-## Requirements
-
-- Python 3.10 or newer
-- NumPy (installed from `requirements.txt`)
-- Plain Python standard library where required
-
-The project does not uses any external ML/DL libraries such as:
-
-- scikit-learn
-- pandas
-- PyTorch
-
----
 
 ## Installation
 
-Clone the repository and move into its root directory:
+Use Python **3.10 or later**. From the repository root (the folder containing `pyproject.toml`), run:
 
 ```bash
-git clone https://github.com/prajalpatidar0406/Morpheus-Assignment-2.1-Programming-Task-1-.git
-cd Morpheus-Assignment-2.1-Programming-Task-1-
-```
-
-Create and activate a virtual environment.
-
-**macOS / Linux**
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
-
-**Windows**
-
-```powershell
-python -m venv .venv
-.venv\Scripts\activate
-```
-
-Install the package and development dependencies:
-
-```bash
+python -m pip install -e .
 python -m pip install -r requirements-dev.txt
-python -m pip install .
-python -m pip install jupyter
 ```
 
-The installed package is named `numcompute` and can be imported from Python scripts or Jupyter notebooks.
+NumCompute's algorithm implementations use standard Python, NumPy, and Matplotlib; `pytest` is used for testing. Jupyter tooling is needed only to run the notebook.
 
----
-
-## Modules
-
-### `io.py` — Data loading
-
-Supports:
-
-- `load_csv(path, ...) -> (header, data)` for complete-table loading
-- `iter_csv(path, chunksize=1000, ...)` for bounded-memory iteration
-- Custom delimiters, requested or inferred dtypes, and fill/drop missing modes
-- Numeric arrays for numeric tables and object arrays for mixed columns
-
-`load_csv` returns the column names and a 2D NumPy array using
-`numpy.loadtxt`. Use `iter_csv` to process data in bounded-memory chunks.
-
----
-
-### `preprocessing.py` — Data preprocessing
-
-Preprocessing components:
-
-- `StandardScaler`
-- `MinMaxScaler`
-- `OneHotEncoder`
-- `Imputer` for replacing NaN or configured missing-value markers
-
-Preprocessors provide `fit(X)`, `transform(X)`, and `fit_transform(X)` methods.
+## Streaming classification example
 
 ```python
-fit(X) -> self
-transform(X) -> X_out
-fit_transform(X) -> X_out
+from numcompute_stream import (
+    DecisionTreeClassifier,
+    Imputer,
+    Pipeline,
+    StandardScaler,
+    StreamTrainer,
+)
+from numcompute_stream.io import iter_supervised_csv
+pipeline = Pipeline([
+    ("impute", Imputer(strategy="mean")),
+    ("scale", StandardScaler()),
+    ("tree", DecisionTreeClassifier(max_depth=5, buffer_size=200)),
+])
+trainer = StreamTrainer(pipeline, positive_label="1", window_size=200)
+for X, y in iter_supervised_csv(
+    "demo/data/titanic.csv",
+    target="survived",
+    features=["pclass", "age", "sibsp", "parch", "fare"],
+    chunksize=100,
+):
+    log = trainer.fit_chunk(X, y)
+    print(log["chunk"], log["chunk_accuracy"], log["n_retrains"])
+results = trainer.result()
+print(results["confusion_matrix"])
 ```
 
----
+### Buffered retraining and evaluation
 
-### `sort_search.py` - Sorting and searching algorithms
+For `buffer_size=200`, two 100-sample chunks trigger one retraining event. Between retraining events, predictions use the most recently trained tree; once retraining occurs, the data buffer is cleared. If the stream ends with fewer than 200 buffered samples, they remain buffered rather than triggering a forced fit.
 
-Includes:
+`StreamTrainer.fit_chunk(X, y)` follows **test-before-train (prequential) evaluation**: it scores an incoming chunk before using the chunk to update the pipeline. Before the initial model fit, predictions are unavailable, so warm-up chunks are excluded from evaluation. The pipeline keeps a fixed inference-time preprocessing representation until the next retrain, preventing online scaler or encoder updates from changing inputs to an older tree.
 
-- Stable sorting
-- Multi-key sorting
-- `topk(values, k, largest=True, return_indices=True)`
-- Top-k selection using `np.argpartition`
-- Quickselect
-- Binary search
+For evaluation without updating the model, use `StreamTrainer.score_chunk(X, y)`.
 
-Binary search returns the insertion index and whether the value exists.
+## Jupyter demonstration and visualisation
 
----
+Open `demo/stream_demo.ipynb` in a Jupyter-compatible environment or VS Code with the Python and Jupyter extensions, select the project interpreter, and choose **Run All**.
 
-### `rank.py` - Ranking and percentile
+The notebook reads the Titanic CSV through the custom I/O module, simulates incoming chunks, trains the streaming pipeline, logs evaluation metrics, and compares separate single-tree models with different buffer sizes. It includes accuracy/error curves, AUC, a streaming dashboard, and predictions versus ground truth.
 
-`rank(data, method="average")` supports the `average`, `dense`, and `ordinal` ranking methods and handles tied values.
+Reusable plotting functions are available in `numcompute_stream.visualise`:
 
 ```python
-rank(data, method="average")
+from numcompute_stream.visualise import (
+    plot_metric_over_time,
+    compare_models,
+    plot_predictions_vs_ground_truth,
+    plot_stream_dashboard,
+)
 ```
 
-Percentile interpolation supports `linear`, `lower`, `higher`, and `midpoint` methods.
+Plots can be shown in a notebook or saved as image files.
 
-```python
-percentile(data, q, interpolation="linear")
-```
+## Testing
 
----
-
-### `stats.py` — Descriptive statistics
-
-Basic statistical functions:
-
-- Mean
-- Median
-- Standard deviation
-- Minimum
-- Maximum
-- Histogram
-- Quantiles
-- NaN-aware batch statistics and exact quantiles
-
----
-
-### `metrics.py` — Model evaluation
-
-Classification metrics:
-
-```python
-accuracy(y_true, y_pred)
-precision(y_true, y_pred)
-recall(y_true, y_pred)
-f1(y_true, y_pred)
-confusion_matrix(y_true, y_pred)
-```
-
-Regression metric:
-
-```python
-mse(y_true, y_pred)
-```
-
-Optional bonus functionality:
-
-```python
-roc_curve(y_true, y_score)
-auc(x, y)
-```
-
-Precision, recall, and F1 accepts a `positive_label` argument. In the confusion matrix, rows represent true labels and columns represent predicted labels.
-
----
-
-### `optim.py` — Numerical differentiation
-
-The `grad` function estimates gradients using finite differences:
-
-```python
-grad(f, x, h=1e-5, method="central")
-```
-
-Supported methods are `central` and `forward`. Jacobian estimation is provided through:
-
-```python
-jacobian(F, x, ...)
-```
-
----
-
-### `pipeline.py` — Pipeline composition
-
-Provides a minimal interface for composing transformers and estimators.
-
-Preprocessors use:
-
-```python
-fit(X)
-transform(X)
-```
-
-Models use:
-
-```python
-fit(X, y)
-predict(X)
-```
-
-No machine learning model implementation is used.
-
-The module also provides pipeline chaining, `Compose` for sequential
-transformers, and `FeatureUnion` for concatenating independent feature outputs.
-
-Example:
-
-```python
-from numcompute.pipeline import Pipeline
-from numcompute.preprocessing import StandardScaler
-
-pipe = Pipeline([("scale", StandardScaler())])
-X_transformed = pipe.fit_transform(X)
-```
-
----
-
-### `utils.py` — Shared utilities
-
-Contains reusable helper functionality shared across the project.
-
-Utilities should only be added here when they are genuinely reusable across multiple modules.
-
----
-
-### `benchmarking.py` — Performance measurement
-
-Contains reusable micro-benchmarking functionality for measuring implementation performance.
-
-`benchmark(function, ..., repeats=5, warmup=1)` returns minimum, median, and
-mean elapsed times in seconds plus Python, NumPy, OS/platform, processor, and
-CPU-count metadata. `compare()` benchmarks named implementations with shared
-arguments, and `format_table()` renders timing and environment information.
-
----
-
-## Running Tests
-
-Run the full test suite from the repository root:
+Run the complete test suite from the repository root:
 
 ```bash
-python -m pytest
+python -m pytest -q
 ```
 
-Run an individual test file when focusing on a particular module. For example:
+The project passed **513 tests** in the verified development environment, covering both original NumCompute functionality and the streaming extension. Test cases include empty or malformed inputs, missing values, constant features, class ties, buffer thresholds and oversized chunks, evolving one-hot categories, metrics accumulation, and CSV-to-model integration.
+
+The tree demonstrations can also be run directly:
 
 ```bash
-python -m pytest tests/test_optim.py
+python -m demo.classification_tree_demo
+python -m demo.stream_trainer_demo
 ```
 
-The tests cover normal usage, boundary conditions, invalid inputs, empty arrays, duplicate and tied values, NaN handling, input shapes, top-k boundary values, non-contiguous arrays, and chunked data processing.
+## Performance benchmarks
 
----
+Reproduce both experiments with:
 
-# Demo
-
-The end-to-end demonstration is located at:
-
-```text
-demo/quickstart.ipynb
+```bash
+python -m benchmark.run_benchmarks --repeats 5
 ```
 
-Open `demo/quickstart.ipynb` and run the cells in order.The demo demonstrates the implemented functionality, including:
+The benchmark scripts use the Titanic CSV in chronological 50-row chunks and save their tables, runtime metadata, and figures under `benchmark/results/`.
 
-1. CSV loading
-2. Preprocessing
-3. Sorting and searching
-4. Ranking and percentiles
-5. Statistics
-6. Gradients and Jacobians
-7. Pipeline usage
-8. Benchmark results
+### Loop-based versus NumPy-vectorised split search
 
----
+Both implementations calculate the same root-node split on matching buffered data. The timing covers **split search**, not a complete tree fit. Medians from a five-repeat run on Windows 11:
 
-# Benchmark
+| Buffered samples | Python loops | NumPy vectorised | Speedup |
+| ---------------: | -----------: | ---------------: | ------: |
+|              100 |     0.750 ms |         0.915 ms |   0.82× |
+|              200 |     1.750 ms |         0.984 ms |   1.78× |
+|              400 |     3.697 ms |         1.157 ms |   3.19× |
 
-The quickstart notebook compares implementations, particularly:
+NumPy was faster at larger buffer sizes, while array-processing overhead outweighed the benefit at 100 samples.
 
-```text
-Python loops
-        vs.
-NumPy vectorised implementations
-```
+### Buffer size versus streaming performance
 
-The notebook uses a seeded 200,000-element input, one warm-up, and five timed repeats. Its results include median and minimum seconds and the runtime environment. Measurements depend on machine and system load; rerun to measure your system. `format_table(compare(...))` generates current results rather than relying on fixed timing claims.
+Each configuration contains one decision tree (`max_depth=5`). Accuracy is measured on the same **391 post-warm-up observations**, with each arriving chunk evaluated before training.
 
-Example local measurement (Python 3.13.7, NumPy 2.5.4, macOS 27.0.1,
-arm64, 10 reported CPUs; seeded 200,000-element input, one warm-up and five
-timed repeats):
+| Buffer size | Matched accuracy | Retrain events | Median retraining-update time |
+| ----------: | ---------------: | -------------: | ----------------------------: |
+|          50 |            66.8% |             17 |                       5.58 ms |
+|         100 |            71.6% |              8 |                       7.91 ms |
+|         200 |            68.8% |              4 |                       9.43 ms |
+|         500 |            68.8% |              1 |                      12.42 ms |
 
-| Implementation   | Median (s) | Minimum (s) |
-| ---------------- | ---------: | ----------: |
-| Python loop      |    0.00737 |     0.00692 |
-| NumPy vectorised |  0.0000735 |   0.0000306 |
+In this experiment, a buffer size of 100 gave the highest matched accuracy, while 500 required the fewest retraining events. The retraining-update timing includes the entire threshold-crossing pipeline update, not just tree fitting. Timings are hardware-dependent.
 
----
+## Design decisions and limitations
 
-# Project Team
+- **Single-tree model:** Each pipeline contains one classification tree; no external machine-learning library or ensemble method is used.
+- **Numerical stability:** Split evaluation and preprocessing handle missing values, zero-variance features, invalid shapes, and ties through explicit rules and validation.
+- **Replacement retraining:** The trained tree is rebuilt using the latest completed buffer, rather than continuously growing or retaining all earlier training samples.
+- **Feature consistency:** Prediction-time preprocessing is frozen between retrains, including when new one-hot categories appear.
+- **Warm-up:** Metrics cannot be computed before the first tree is trained.
+- **Memory:** Exact cumulative ROC AUC retains labels and scores, so its storage grows with evaluated observations. Logged memory estimates are approximate Python object sizes rather than process memory usage.
+- **Pipeline constraints:** Width-changing categorical encoders are supported immediately before the tree; more complex arrangements of stateful transformers may need feature-schema handling.
+- **Benchmark interpretation:** Results are specific to the dataset, sample order, model settings, and execution environment; they do not imply a universally optimal buffer size.
 
-| Team Member    | Main Contribution                                                                                      |
-| -------------- | ------------------------------------------------------------------------------------------------------ |
-| Prajal Patidar | io.py (shared contribution), optim.py, benchmarking.py, utils.py, pipeline.py, and project integration |
-| Manthan Lad    | stats.py, metrics.py, display_histogram.py, and technical report                                       |
-| Mansi Khare    | io.py (shared contribution), rank.py, and presentation                                                 |
-| Sarthak Sharma | preprocessing.py, sort_search.py, and technical report                                                 |
+## Dependencies
+
+- Python 3.10+
+- NumPy
+- Matplotlib
+- pytest (development/tests)
+- Jupyter / ipykernel (notebook execution only)
+
+The streaming model and numerical algorithms do **not** use scikit-learn, pandas, PyTorch, or other external machine-learning/data-processing libraries.
