@@ -5,8 +5,8 @@ Every candidate threshold of a feature is evaluated in one NumPy batch,
 using sorted feature values and cumulative class counts. Recursion over
 nodes is unavoidable, but individual training samples are not looped over.
 
-For 0/1 features without missing values, splits use the lecturer's
-``X[:, feature] == 1`` question: YES travels left and NO travels right.
+For 0/1 features without missing values, splits use
+``X[:, feature] == 1``: YES travels left and NO travels right.
 For general numeric features, splits use ``X[:, feature] <= threshold``.
 NaNs always travel right, including when a numeric threshold is chosen.
 Infinite values are rejected; label ties favour the first sorted class.
@@ -199,7 +199,7 @@ class DecisionTreeClassifier:
         """Find the best split using vectorised cumulative class counts.
 
         The last return item marks a 0/1 question using ``== 1`` (YES
-        left), matching the Week 10 lecturer's binary-feature example.
+        left), using the binary-feature branch convention.
         Continuous features use a numeric threshold (``<=`` left).
         """
         n_samples, n_features = X.shape
@@ -255,8 +255,8 @@ class DecisionTreeClassifier:
                         threshold = float(sorted_vals[start])
                 else:
                     threshold = float(sorted_vals[start])
-                # The lecturer's teaching example uses 0/1 questions with
-                # the YES rows on the left. This is the same partition as
+                # Binary 0/1 features send YES rows to the left. This is
+                # the same partition as
                 # a 0.5 threshold but with reversed child ordering. If NaNs
                 # exist, preserve the general threshold rule so NaNs stay
                 # on the right and the evaluated gain remains accurate.

@@ -1,6 +1,6 @@
 """
 Run from the repository root
-    python -m demo.step4_stream_trainer_demo
+    python -m demo.stream_trainer_demo
 
 The data is read by NumCompute's original custom CSV iterator through
 numcompute_stream.io, not pandas. No external ML libraries are used.
@@ -32,7 +32,7 @@ def main() -> None:
     ])
     trainer = StreamTrainer(pipeline, positive_label='1', window_size=200)
 
-    print('Assignment 2.2 / Step 4 / Titanic streaming demo')
+    print('Titanic streaming classification demo')
     print('Evaluation: score BEFORE fitting each incoming chunk (no test leakage).')
     print('A buffer of 200 new samples triggers one replacement-tree retrain.\n')
     print('chunk  rows  acc    cumulative  rolling  AUC    buffered  retrains  update_ms')

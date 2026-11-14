@@ -1,7 +1,7 @@
-"""Step 2 smoke test: chunked training with the existing Titanic CSV I/O.
+"""Buffered decision-tree classification on streamed Titanic CSV rows.
 
 Run from the repository root:
-    python demo/step2_tree_demo.py
+    python -m demo.tree_demo
 
 Predictions are evaluated before training on each arriving chunk. The first
 chunk(s) cannot be scored until the buffer has produced an initial tree.

@@ -1,0 +1,5 @@
+buffer_size,chunk_size,stream_samples,shared_test_samples,shared_correct,shared_accuracy,prequential_accuracy_all_available,warmup_samples,retrain_count,buffered_samples_at_end,median_retrain_update_ms,total_retrain_update_ms,total_update_ms,peak_estimated_memory_kb,repeats
+50,50,891,391,261,0.667519,0.62069,50,17,41,5.575,95.4831,95.6313,67.6904,5
+100,50,891,391,280,0.716113,0.635904,100,8,91,7.9078,59.5963,61.251,69.0459,5
+200,50,891,391,269,0.68798,0.655572,200,4,91,9.4282,39.3732,41.8684,66.4014,5
+500,50,891,391,269,0.68798,0.68798,500,1,391,12.418,12.418,14.8586,80.4287,5

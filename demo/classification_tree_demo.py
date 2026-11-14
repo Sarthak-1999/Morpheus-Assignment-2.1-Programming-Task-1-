@@ -1,8 +1,4 @@
-"""
-Run: python demo/lecturer_classification_tree_demo.py
-
-This code implements and explains the learning rules
-"""
+"""Illustrate Gini/entropy classification and buffered tree retraining."""
 
 import numpy as np
 
@@ -40,7 +36,7 @@ def display_tree(node, level=0):
 
 
 def main():
-    print("Lecturer's Week 10 classification tree: twelve students")
+    print("Classification tree: twelve students")
     print("Features: submitted, attended, study_group; target: passed")
     for criterion in ("gini", "entropy"):
         model = DecisionTreeClassifier(max_depth=2, criterion=criterion).fit(X, y)

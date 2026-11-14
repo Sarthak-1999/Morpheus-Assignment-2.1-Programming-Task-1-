@@ -1,7 +1,7 @@
-"""Step 3 demonstration: streaming Titanic CSV through NumCompute utilities.
+"""Stream Titanic CSV through incremental NumCompute preprocessing.
 
 Run from repository root:
-    python demo/step3_streaming_data_demo.py
+    python -m demo.streaming_data_demo
 """
 
 from pathlib import Path
@@ -42,7 +42,7 @@ def main() -> None:
         )
         assert np.isfinite(X_scaled).all()
 
-    print("All chunks processed; step 3 streaming preprocessing is operational.")
+    print("Streaming preprocessing completed successfully.")
 
 
 if __name__ == "__main__":

@@ -217,7 +217,8 @@ class OneHotEncoder:
 
     Important: the consuming pipeline must reconcile feature-count changes
     with an already trained decision tree; do not directly send a widened
-    matrix to an old tree. See the Assignment 2.2 progress notes.
+    matrix to an old tree. The streaming Pipeline keeps an inference-time
+    transformer snapshot until the next buffered tree retraining.
     """
 
     def __init__(self, handle_unknown: str = "ignore") -> None:

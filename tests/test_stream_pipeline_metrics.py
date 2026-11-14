@@ -1,4 +1,4 @@
-"""Step 4: streaming metrics, frozen-transform pipeline, prequential trainer."""
+"""Streaming metrics, frozen-transform pipelines, and prequential training."""
 import math
 
 import numpy as np

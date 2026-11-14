@@ -1,0 +1,4 @@
+buffer_size,snapshots,median_samples,median_loop_ms,median_vectorized_ms,median_speedup
+100,8,100.0,0.75,0.9148,0.8199
+200,4,200.0,1.7504,0.98415,1.7786
+400,2,400.0,3.6967,1.1573,3.1942

@@ -1,4 +1,4 @@
-"""Step 5: reusable, headless matplotlib stream visualisation tests."""
+"""Reusable, headless Matplotlib streaming visualisation tests."""
 import matplotlib
 matplotlib.use('Agg', force=True)
 import matplotlib.pyplot as plt
