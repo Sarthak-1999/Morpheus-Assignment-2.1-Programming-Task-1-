@@ -242,8 +242,10 @@ class OneHotEncoder:
             text_values = np.asarray(data, dtype=str)
             if np.any((text_values == "<MISSING>") & ~missing):
                 raise ValueError("'<MISSING>' is reserved for absent categories.")
-            text_values[missing] = "<MISSING>"
-            return text_values
+            # np.where widens the Unicode dtype to fit the complete marker.
+            # Assigning it directly to a short fixed-width NumPy string array
+            # would silently truncate it (e.g. '<MISSING>' -> '<MIS>').
+            return np.where(missing, "<MISSING>", text_values)
         return data.astype(str)
 
     def fit(self, X: npt.ArrayLike) -> "OneHotEncoder":
