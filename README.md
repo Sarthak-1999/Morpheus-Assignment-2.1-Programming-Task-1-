@@ -11,7 +11,7 @@ The original group package remains in `NumCompute/numcompute/`; the streaming ex
 - **Incremental preprocessing:** Running statistics, scaling, missing-value imputation, and categorical one-hot encoding.
 - **Streaming pipeline:** Chained preprocessing and model training with a consistent feature representation between retraining events.
 - **Evaluation:** Per-chunk and cumulative accuracy, error, precision, recall, F1-score, confusion matrix, ROC AUC, and rolling-window metrics.
-- **Visualisation:** Reusable Matplotlib plots for metrics over time, model comparisons, and predicted versus actual labels.
+- **Visualisation:** Reusable Matplotlib plots for metrics over time, model comparisons, predictions versus actual labels, and a confusion matrix heatmap.
 - **Testing and benchmarking:** Automated unit/integration tests and controlled performance experiments.
 
 ## Project structure
@@ -26,7 +26,7 @@ numcompute_stream/
     metrics.py              Classification metrics
     pipeline.py             Incremental model pipeline
     stream.py               StreamTrainer and logging
-    visualise.py            Plotting utilities
+    visualise.py            Plotting utilities, including confusion matrix
 tests/                      Unit and integration tests
 demo/
     data/titanic.csv        Example classification dataset
@@ -98,7 +98,7 @@ For evaluation without updating the model, use `StreamTrainer.score_chunk(X, y)`
 
 Open `demo/stream_demo.ipynb` in a Jupyter-compatible environment or VS Code with the Python and Jupyter extensions, select the project interpreter, and choose **Run All**.
 
-The notebook reads the Titanic CSV through the custom I/O module, simulates incoming chunks, trains the streaming pipeline, logs evaluation metrics, and compares separate single-tree models with different buffer sizes. It includes accuracy/error curves, AUC, a streaming dashboard, and predictions versus ground truth.
+The notebook reads the Titanic CSV through the custom I/O module, simulates incoming chunks, trains the streaming pipeline, logs evaluation metrics, and compares separate single-tree models with different buffer sizes. It includes accuracy/error curves, AUC, a streaming dashboard, predictions versus ground truth, and a coloured cumulative confusion matrix heatmap.
 
 Reusable plotting functions are available in `numcompute_stream.visualise`:
 
@@ -108,6 +108,7 @@ from numcompute_stream.visualise import (
     compare_models,
     plot_predictions_vs_ground_truth,
     plot_stream_dashboard,
+    plot_confusion_matrix,
 )
 ```
 
@@ -121,7 +122,7 @@ Run the complete test suite from the repository root:
 python -m pytest -q
 ```
 
-The project passed **513 tests** in the verified development environment, covering both original NumCompute functionality and the streaming extension. Test cases include empty or malformed inputs, missing values, constant features, class ties, buffer thresholds and oversized chunks, evolving one-hot categories, metrics accumulation, and CSV-to-model integration.
+The latest version passed **534 tests** in the verified local test run, covering both original NumCompute functionality and the streaming extension. Test cases include empty or malformed inputs, missing values, constant features, class ties, buffer thresholds and oversized chunks, evolving one-hot categories, metrics accumulation, confusion matrix plotting, and CSV-to-model integration.
 
 The tree demonstrations can also be run directly:
 
