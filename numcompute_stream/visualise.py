@@ -157,6 +157,56 @@ def plot_predictions_vs_ground_truth(y_true, y_pred, *,
     return fig, ax
 
 
+
+def plot_confusion_matrix(confusion_matrix, labels=None, *,
+                          title: str = 'Cumulative confusion matrix',
+                          ax: Axes | None = None, save_path=None,
+                          show: bool = False) -> tuple[Figure, Axes]:
+    """Display accumulated classification counts as a grayscale heatmap.
+
+    Matrix rows are true classes and columns are predicted classes.
+    ``labels`` must follow the same class order used to build the matrix.
+    The colour scale shows counts, not normalised percentages.
+    """
+    try:
+        counts = np.asarray(confusion_matrix, dtype=float)
+    except (TypeError, ValueError) as exc:
+        raise TypeError('confusion_matrix must contain numeric counts.') from exc
+    if counts.ndim != 2 or not counts.size or counts.shape[0] != counts.shape[1]:
+        raise ValueError('confusion_matrix must be a nonempty square 2D matrix.')
+    if not np.isfinite(counts).all() or (counts < 0).any():
+        raise ValueError('confusion_matrix must contain finite nonnegative counts.')
+    if not np.equal(counts, np.floor(counts)).all():
+        raise ValueError('confusion_matrix must contain whole-number counts.')
+
+    n_classes = counts.shape[0]
+    if labels is None:
+        class_names = [str(i) for i in range(n_classes)]
+    else:
+        values = np.asarray(labels, dtype=object)
+        if values.ndim != 1 or values.size != n_classes:
+            raise ValueError('labels must be 1D and match the confusion matrix size.')
+        class_names = [str(value) for value in values]
+
+    fig, ax = _axes(ax, figsize=(6, 5))
+    colour_max = max(1.0, float(counts.max()))
+    image = ax.imshow(counts, cmap='Greys', vmin=0, vmax=colour_max,
+                      interpolation='nearest')
+    for row, col in np.ndindex(counts.shape):
+        count = int(counts[row, col])
+        ink = 'white' if counts[row, col] > colour_max * 0.55 else 'black'
+        ax.text(col, row, str(count), ha='center', va='center',
+                color=ink, fontsize=12, fontweight='semibold')
+
+    positions = np.arange(n_classes)
+    ax.set_xticks(positions, class_names)
+    ax.set_yticks(positions, class_names)
+    ax.set(xlabel='Predicted class', ylabel='Actual class', title=title)
+    ax.tick_params(axis='both', length=0)
+    fig.colorbar(image, ax=ax, fraction=0.047, pad=0.04, label='Sample count')
+    _finish(fig, save_path=save_path, show=show)
+    return fig, ax
+
 def _history_values(history: Sequence[Mapping], key: str) -> np.ndarray:
     if not all(isinstance(row, Mapping) and key in row for row in history):
         raise ValueError(f'Every history row must contain the {key!r} metric.')
@@ -259,5 +309,5 @@ class LiveMetricPlot:
 
 __all__ = [
     'plot_metric_over_time', 'compare_models', 'plot_predictions_vs_ground_truth',
-    'plot_stream_dashboard', 'LiveMetricPlot',
+    'plot_stream_dashboard', 'plot_confusion_matrix', 'LiveMetricPlot',
 ]
